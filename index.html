@@ -163,13 +163,15 @@
             margin-left: 5px;
         }
 
-        /* 菜单 */
+        /* 菜单：固定视口高度，内容可滚动，允许触摸滑动 */
         .menu {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
             background: linear-gradient(135deg, #4a4a5e 0%, #3d3d4f 50%, #2d2d3d 100%);
             display: flex;
             flex-direction: column;
@@ -177,10 +179,13 @@
             justify-content: flex-start;
             z-index: 100;
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 100px;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             box-sizing: border-box;
+            touch-action: pan-y;
+            overscroll-behavior-y: contain;
         }
 
         /* 游戏运行时隐藏菜单 */
@@ -365,23 +370,17 @@
             color: #ff69b4;
             font-weight: bold;
             font-size: 22px;
-        }
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .game-over .score-summary span {
-            color: #00ff88;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(0,255,136,0.5);
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
         }
 
-        /* 作者信息 */
+        /* 作者信息：保证在菜单底部可滚动看到 */
         .author-info {
             color: rgba(255,255,255,0.6);
             font-size: 12px;
             text-align: center;
             margin-top: auto;
-            padding-bottom: 30px;
+            padding-top: 20px;
+            padding-bottom: 40px;
             flex-shrink: 0;
             width: 100%;
         }
