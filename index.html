@@ -16,31 +16,20 @@
 
         html, body {
             width: 100%;
-            height: 100%;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
             background: #000;
             margin: 0;
             padding: 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
         }
 
-        /* 菜单允许滚动 */
-        .menu {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y;
-        }
 
         body {
             font-family: 'Segoe UI', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             color: #fff;
             position: relative;
         }
@@ -51,6 +40,14 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* 游戏运行时画布显示 */
+        #gameCanvas.active {
+            opacity: 1;
         }
 
         /* 虚拟摇杆 */
@@ -61,6 +58,12 @@
             width: 120px;
             height: 120px;
             z-index: 50;
+            display: none;
+        }
+
+        /* 游戏运行时显示虚拟摇杆 */
+        body.game-running .joystick-area {
+            display: block;
         }
 
         .joystick-base {
@@ -100,7 +103,7 @@
             background: linear-gradient(135deg, rgba(100, 100, 100, 0.5), rgba(80, 80, 80, 0.3));
             border: 3px solid rgba(100, 100, 100, 0.6);
             border-radius: 50%;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             font-size: 32px;
@@ -109,6 +112,11 @@
             z-index: 50;
             user-select: none;
             -webkit-user-select: none;
+        }
+
+        /* 游戏运行时显示加速按钮 */
+        body.game-running .boost-btn {
+            display: flex;
         }
 
         .boost-btn.active {
@@ -159,8 +167,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            min-height: 100vh;
+            right: 0;
+            bottom: 0;
             background: linear-gradient(135deg, #4a4a5e 0%, #3d3d4f 50%, #2d2d3d 100%);
             display: flex;
             flex-direction: column;
@@ -168,13 +176,18 @@
             justify-content: flex-start;
             z-index: 100;
             padding: 20px;
-            padding-bottom: 60px;
+            padding-bottom: 80px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .menu.hidden { display: none; }
+        /* 游戏运行时隐藏菜单 */
+        .menu.hidden {
+            display: none;
+        }
 
         .menu h1 {
             font-size: 32px;
@@ -376,6 +389,13 @@
             color: #888;
             z-index: 40;
             pointer-events: none;
+            display: none;
+        }
+
+        /* 游戏运行时显示操作提示 */
+        body.game-running .control-hint {
+            display: block;
+        }
             opacity: 0.8;
         }
 
@@ -385,7 +405,8 @@
             font-size: 12px;
             text-align: center;
             margin-top: 15px;
-            padding-bottom: 10px;
+            padding-bottom: 30px;
+            flex-shrink: 0;
         }
 
         .author-info span {
@@ -650,7 +671,7 @@
 
     <!-- 主菜单 -->
     <div class="menu" id="mainMenu">
-        <img src="asserts/images/cute_snake.jpg" style="width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 0 25px rgba(92, 107, 192, 0.4); margin: 10px;">
+        <img src="asserts/images/cute_snake.png" style="width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 0 25px rgba(92, 107, 192, 0.4); margin: 10px;">
         <h1 style="margin-top: 5px; font-size: 28px; text-shadow: 0 2px 10px rgba(255,105,180,0.5);">贪吃蛇大作战</h1>
         <h2 style="font-size: 14px; opacity: 0.8; margin-bottom: 15px;">360° 自由方向 · 陀螺仪/摇杆/滑动</h2>
 
@@ -708,7 +729,7 @@
         <button class="menu-btn" onclick="window.open('help.html','_blank')" style="background: transparent; border: 2px solid #ff69b4; color: #ff69b4;">📖 玩法说明</button>
 
         <!-- 作者信息 -->
-        <div class="author-info" id="authorInfo">🎮 作者: <span>Gerry</span> | 📌 版本: <span>v4.5</span></div>
+        <div class="author-info" id="authorInfo">🎮 作者: <span>Gerry</span> | 📌 版本: <span>v1.0</span></div>
     </div>
 
     <!-- 游戏结束 -->
@@ -760,6 +781,53 @@
         let gameLoop = null;
         let isRunning = false;
         let frameCount = 0; // 帧计数器
+        // 游戏循环优化：使用 requestAnimationFrame
+        let lastFrameTime = 0;
+        let gameAccumulator = 0;
+
+        // 基于 requestAnimationFrame 的游戏循环
+        function gameLoopRAF(timestamp) {
+            if (!isRunning) return;
+
+            if (!lastFrameTime) lastFrameTime = timestamp;
+            const deltaTime = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
+
+            // 累积时间，用于固定频率更新
+            gameAccumulator += deltaTime;
+
+            // 按 currentSpeed 频率更新游戏逻辑
+            while (gameAccumulator >= currentSpeed) {
+                update();
+                gameAccumulator -= currentSpeed;
+            }
+
+            // 每帧都渲染
+            draw();
+
+            // 继续循环
+            gameLoop = requestAnimationFrame(gameLoopRAF);
+        }
+
+        // 启动游戏循环
+        function startGameLoop() {
+            lastFrameTime = 0;
+            gameAccumulator = 0;
+            stopGameLoop();
+            gameLoop = requestAnimationFrame(gameLoopRAF);
+        }
+
+        // 停止游戏循环
+        function stopGameLoop() {
+            if (gameLoop) {
+                if (typeof gameLoop === 'number') {
+                    cancelAnimationFrame(gameLoop);
+                } else {
+                    clearInterval(gameLoop);
+                }
+                gameLoop = null;
+            }
+        }
 
         // 游戏模式
         let gameMode = 'classic'; // 'classic' 经典模式, 'timed' 限时挑战, 'battle' 大乱斗, 'chase' 大追杀
@@ -1221,7 +1289,7 @@
 
                     // 找最近的食物
                     foods.forEach(food => {
-                        const dist = Math.sqrt(Math.pow(food.x - ai.body[0].x, 2) + Math.pow(food.y - ai.body[0].y, 2));
+                        const dist = Math.sqrt((food.x - ai.body[0].x) * (food.x - ai.body[0].x) + (food.y - ai.body[0].y) * (food.y - ai.body[0].y));
                         if (dist < minDist) {
                             minDist = dist;
                             target = food;
@@ -1310,7 +1378,7 @@
                 let ateFood = false;
                 for (let i = foods.length - 1; i >= 0; i--) {
                     const food = foods[i];
-                    const dist = Math.sqrt(Math.pow(food.x - headX, 2) + Math.pow(food.y - headY, 2));
+                    const dist = Math.sqrt((food.x - headX) * (food.x - headX) + (food.y - headY) * (food.y - headY));
                     if (dist < 1) {
                         ai.score += food.value * 10;
                         ai.body.unshift({ x: headX, y: headY });
@@ -1345,8 +1413,8 @@
 
                 // 计算与玩家的距离
                 const distToPlayer = Math.sqrt(
-                    Math.pow(ai.body[0].x - playerHead.x, 2) +
-                    Math.pow(ai.body[0].y - playerHead.y, 2)
+                    (ai.body[0].x - playerHead.x) * (ai.body[0].x - playerHead.x) +
+                    (ai.body[0].y - playerHead.y) * (ai.body[0].y - playerHead.y)
                 );
 
                 // 危险距离阈值（根据难度调整）
@@ -1382,8 +1450,8 @@
                     for (let otherAI of aiSnakes) {
                         if (otherAI === ai || !otherAI.alive) continue;
                         const otherDist = Math.sqrt(
-                            Math.pow(ai.body[0].x + Math.cos(fleeDir) * 3 - otherAI.body[0].x, 2) +
-                            Math.pow(ai.body[0].y + Math.sin(fleeDir) * 3 - otherAI.body[0].y, 2)
+                            (ai.body[0].x + Math.cos(fleeDir) * 3 - otherAI.body[0].x) * (ai.body[0].x + Math.cos(fleeDir) * 3 - otherAI.body[0].x) +
+                            (ai.body[0].y + Math.sin(fleeDir) * 3 - otherAI.body[0].y) * (ai.body[0].y + Math.sin(fleeDir) * 3 - otherAI.body[0].y)
                         );
                         if (otherDist < 3) {
                             // 会被其他AI撞到，尝试绕过
@@ -1437,8 +1505,8 @@
                     // 撞到其他AI时只是转向躲避，不判定失败
                     // 计算距离，如果太近则转向
                     const distToOther = Math.sqrt(
-                        Math.pow(headX - otherAI.body[0].x, 2) +
-                        Math.pow(headY - otherAI.body[0].y, 2)
+                        (headX - otherAI.body[0].x) * (headX - otherAI.body[0].x) +
+                        (headY - otherAI.body[0].y) * (headY - otherAI.body[0].y)
                     );
 
                     if (distToOther < 3) {
@@ -1453,7 +1521,7 @@
                 let ateFood = false;
                 for (let i = foods.length - 1; i >= 0; i--) {
                     const food = foods[i];
-                    const dist = Math.sqrt(Math.pow(food.x - headX, 2) + Math.pow(food.y - headY, 2));
+                    const dist = Math.sqrt((food.x - headX) * (food.x - headX) + (food.y - headY) * (food.y - headY));
                     if (dist < 1) {
                         ai.score += food.value * 10;
                         ai.body.unshift({ x: headX, y: headY });
@@ -1608,7 +1676,7 @@
 
         // 玩家死亡
         function killPlayer(reason) {
-            clearInterval(gameLoop);
+            stopGameLoop();
             isRunning = false;
 
             stopBackgroundMusic();
@@ -2460,7 +2528,7 @@
             foods.forEach(food => {
                 const foodX = food.x * GRID_SIZE + GRID_SIZE/2;
                 const foodY = food.y * GRID_SIZE + GRID_SIZE/2;
-                const dist = Math.sqrt(Math.pow(foodX - headX, 2) + Math.pow(foodY - headY, 2));
+                const dist = Math.sqrt((foodX - headX) * (foodX - headX) + (foodY - headY) * (foodY - headY));
                 if (dist < GRID_SIZE * 3.5) {
                     ctx.save();
                     const alpha = 1 - dist / (GRID_SIZE * 3.5);
@@ -2657,8 +2725,8 @@
             if (gameMode === 'classic' && portals.length > 0 && portalCooldown <= 0) {
                 for (let portal of portals) {
                     const dist = Math.sqrt(
-                        Math.pow(portal.x - headX, 2) +
-                        Math.pow(portal.y - headY, 2)
+                        (portal.x - headX) * (portal.x - headX) +
+                        (portal.y - headY) * (portal.y - headY)
                     );
                     if (dist < 2.5) {  // 增大检测范围
                         // 穿过传送门
@@ -2693,8 +2761,8 @@
                 let collided = false;
                 for (let i = 8; i < snake.length - 1; i++) {
                     const dist = Math.sqrt(
-                        Math.pow(snake[i].x - headX, 2) +
-                        Math.pow(snake[i].y - headY, 2)
+                        (snake[i].x - headX) * (snake[i].x - headX) +
+                        (snake[i].y - headY) * (snake[i].y - headY)
                     );
                     // 只有距离非常近才判定碰撞
                     if (dist < 1) {
@@ -2729,7 +2797,7 @@
 
                     // 头对身体碰撞：玩家头部撞到AI身体
                     for (let j = 1; j < ai.body.length; j++) {
-                        const dist = Math.sqrt(Math.pow(headX - ai.body[j].x, 2) + Math.pow(headY - ai.body[j].y, 2));
+                        const dist = Math.sqrt((headX - ai.body[j].x) * (headX - ai.body[j].x) + (headY - ai.body[j].y) * (headY - ai.body[j].y));
                         if (dist < 1) {
                             // 玩家头部撞到AI身体，AI被击杀
                             killAISnake(ai, '你');
@@ -2757,8 +2825,8 @@
                 const foodCenterX = food.x + 0.5;
                 const foodCenterY = food.y + 0.5;
                 const dist = Math.sqrt(
-                    Math.pow(foodCenterX - headX, 2) +
-                    Math.pow(foodCenterY - headY, 2)
+                    (foodCenterX - headX) * (foodCenterX - headX) +
+                    (foodCenterY - headY) * (foodCenterY - headY)
                 );
 
                 if (dist < eatRange) {
@@ -2854,6 +2922,10 @@
             frameCount = 0;
             updateGridCount();
 
+            // 激活游戏画布和游戏元素
+            document.getElementById('gameCanvas').classList.add('active');
+            document.body.classList.add('game-running');
+
             // 全屏模式
             launchFullscreen();
 
@@ -2862,10 +2934,6 @@
 
             // 重置连击记录
             maxCombo = 0;
-
-            // 隐藏作者信息和控制提示，显示生命
-            document.getElementById('authorInfo').style.display = 'none';
-            document.getElementById('controlHint').style.display = 'none';
 
             // 根据模式显示/隐藏元素
             if (gameMode === 'classic') {
@@ -2935,8 +3003,7 @@
 
             draw();
 
-            if (gameLoop) clearInterval(gameLoop);
-            gameLoop = setInterval(update, currentSpeed);
+            startGameLoop();
             isRunning = true;
 
             // 限时挑战：启动倒计时
@@ -2985,7 +3052,7 @@
 
         // 大乱斗模式结束
         function battleModeGameOver() {
-            clearInterval(gameLoop);
+            stopGameLoop();
             isRunning = false;
             stopBackgroundMusic();
             isGameOver = true;
@@ -3017,7 +3084,7 @@
 
         // 限时挑战结束
         function timedModeGameOver() {
-            clearInterval(gameLoop);
+            stopGameLoop();
             isRunning = false;
             stopBackgroundMusic();
             isGameOver = true;
@@ -3036,7 +3103,7 @@
 
         // 大追杀模式结束
         function chaseModeGameOver() {
-            clearInterval(gameLoop);
+            stopGameLoop();
             isRunning = false;
             stopBackgroundMusic();
             isGameOver = true;
@@ -3075,7 +3142,7 @@
         }
 
         function gameOver() {
-            clearInterval(gameLoop);
+            stopGameLoop();
             isRunning = false;
 
             // 限时挑战模式
@@ -3231,8 +3298,7 @@
                 document.getElementById('length').textContent = snake.length;
 
                 // 重新开始游戏循环和背景音乐
-                if (gameLoop) clearInterval(gameLoop);
-                gameLoop = setInterval(update, currentSpeed);
+                startGameLoop();
                 isRunning = true;
                 bgMusicStarted = false;
                 startBackgroundMusic();
@@ -3255,8 +3321,7 @@
                     spawnFood(30);
                 }
 
-                if (gameLoop) clearInterval(gameLoop);
-                gameLoop = setInterval(update, currentSpeed);
+                startGameLoop();
                 isRunning = true;
 
                 // 重新播放背景音乐
@@ -3281,9 +3346,13 @@
 
         function backToMenu() {
             if (isRunning) {
-                clearInterval(gameLoop);
+                stopGameLoop();
                 isRunning = false;
             }
+            // 隐藏游戏画布和游戏元素
+            document.getElementById('gameCanvas').classList.remove('active');
+            document.body.classList.remove('game-running');
+
             // 清除倒计时
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -3297,8 +3366,7 @@
             stopBackgroundMusic();
             document.getElementById('gameOver').classList.remove('show');
             document.getElementById('mainMenu').classList.remove('hidden');
-            // 显示作者信息，隐藏生命和失败提示
-            document.getElementById('authorInfo').style.display = 'block';
+            // 隐藏生命和失败提示
             document.getElementById('lifeDisplay').style.display = 'none';
             document.getElementById('failHint').classList.remove('show');
 
