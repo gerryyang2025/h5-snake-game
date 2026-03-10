@@ -815,6 +815,8 @@
         let killCount = 0; // 击杀数
         let maxKillCount = 0; // 最高击杀记录
         const CHASE_AI_COUNT = 16; // 大追杀AI数量
+        const START_INVINCIBLE_MS = 3000;   // 经典/限时/大乱斗开局无敌时间（毫秒）
+        const CHASE_START_INVINCIBLE_MS = 3500; // 大逃杀开局无敌时间（毫秒）
 
         // 连击系统
         let combo = 0;
@@ -2977,9 +2979,10 @@
                 document.getElementById('killDisplay').style.display = 'none';
             }
 
-            // 游戏开始时设置初始无敌时间
+            // 游戏开始时设置开局无敌时间，防止开局即判定失败（各模式统一支持）
             isInvincible = true;
-            setTimeout(() => { isInvincible = false; }, 2000);
+            const startInvincibleMs = gameMode === 'chase' ? CHASE_START_INVINCIBLE_MS : START_INVINCIBLE_MS;
+            setTimeout(() => { isInvincible = false; }, startInvincibleMs);
 
             draw();
 
