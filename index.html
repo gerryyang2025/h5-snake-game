@@ -43,6 +43,7 @@
             z-index: 1;
             opacity: 0;
             transition: opacity 0.3s;
+            pointer-events: none;
         }
 
         /* 游戏运行时画布显示 */
@@ -167,8 +168,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            min-height: 100vh;
             background: linear-gradient(135deg, #4a4a5e 0%, #3d3d4f 50%, #2d2d3d 100%);
             display: flex;
             flex-direction: column;
@@ -180,8 +181,6 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         /* 游戏运行时隐藏菜单 */
@@ -376,37 +375,15 @@
             text-shadow: 0 0 10px rgba(0,255,136,0.5);
         }
 
-        /* 操作提示 */
-        .control-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.5);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #888;
-            z-index: 40;
-            pointer-events: none;
-            display: none;
-        }
-
-        /* 游戏运行时显示操作提示 */
-        body.game-running .control-hint {
-            display: block;
-        }
-            opacity: 0.8;
-        }
-
         /* 作者信息 */
         .author-info {
             color: rgba(255,255,255,0.6);
             font-size: 12px;
             text-align: center;
-            margin-top: 15px;
+            margin-top: auto;
             padding-bottom: 30px;
             flex-shrink: 0;
+            width: 100%;
         }
 
         .author-info span {
@@ -647,7 +624,7 @@
     </div>
 
     <!-- 小地图 -->
-    <canvas id="miniMap" width="100" height="100" style="position: fixed; bottom: 20px; right: 130px; width: 100px; height: 100px; background: transparent; border: 2px solid rgba(255,105,180,0.5); border-radius: 8px;"></canvas>
+    <canvas id="miniMap" width="100" height="100" style="position: fixed; bottom: 20px; right: 130px; width: 100px; height: 100px; background: transparent; border: 2px solid rgba(255,105,180,0.5); border-radius: 8px; display: none; z-index: 50;"></canvas>
 
     <!-- 失败提示 -->
     <div class="fail-hint" id="failHint"></div>
@@ -665,7 +642,6 @@
     </div>
 
     <!-- 操作提示 -->
-    <div class="control-hint" id="controlHint">拖动摇杆或滑动屏幕控制方向</div>
 
 
 
@@ -2661,8 +2637,8 @@
                 }
             });
 
-            // 大逃杀模式：绘制AI位置（红点）
-            if (gameMode === 'chase') {
+            // 大逃杀/大乱斗模式：绘制AI位置（红点）
+            if (gameMode === 'chase' || gameMode === 'battle') {
                 aiSnakes.forEach(ai => {
                     if (!ai.alive) return;
                     const aiHead = ai.body[0];
@@ -2936,17 +2912,22 @@
             maxCombo = 0;
 
             // 根据模式显示/隐藏元素
+            const miniMap = document.getElementById('miniMap');
             if (gameMode === 'classic') {
                 document.getElementById('lifeDisplay').style.display = 'block';
+                // 经典模式：显示小地图
+                if (miniMap) miniMap.style.display = 'block';
                 // 初始化传送门
                 initPortals();
             } else if (gameMode === 'battle' || gameMode === 'chase') {
                 // 大乱斗/大追杀模式
                 document.getElementById('lifeDisplay').style.display = 'none';
+                if (miniMap) miniMap.style.display = 'block';
                 portals = [];
             } else {
                 // 限时挑战模式
                 document.getElementById('lifeDisplay').style.display = 'none';
+                if (miniMap) miniMap.style.display = 'none';
                 portals = [];
             }
 
@@ -3369,6 +3350,8 @@
             // 隐藏生命和失败提示
             document.getElementById('lifeDisplay').style.display = 'none';
             document.getElementById('failHint').classList.remove('show');
+            // 隐藏小地图
+            document.getElementById('miniMap').style.display = 'none';
 
             // 恢复游戏结束标题
             const gameOverTitle = document.querySelector('#gameOver h2');
