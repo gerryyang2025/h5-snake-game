@@ -815,8 +815,8 @@
         let killCount = 0; // 击杀数
         let maxKillCount = 0; // 最高击杀记录
         const CHASE_AI_COUNT = 16; // 大追杀AI数量
-        const START_INVINCIBLE_MS = 3000;   // 经典/限时/大乱斗开局无敌时间（毫秒）
-        const CHASE_START_INVINCIBLE_MS = 3500; // 大逃杀开局无敌时间（毫秒）
+        const START_INVINCIBLE_MS = 5000;   // 经典/限时/大乱斗开局无敌时间（毫秒），防止误判
+        const CHASE_START_INVINCIBLE_MS = 5500; // 大逃杀开局无敌时间（毫秒），防止误判
 
         // 连击系统
         let combo = 0;
@@ -1320,12 +1320,16 @@
                     return;
                 }
 
-                // 头对身体碰撞：检测AI头部是否撞到玩家身体
+                // 头对身体碰撞：检测AI头部是否撞到玩家身体（AI 送头，算玩家击杀）
                 for (let i = 1; i < snake.length; i++) {
                     if (Math.abs(headX - snake[i].x) < 1 && Math.abs(headY - snake[i].y) < 1) {
-                        // AI头部撞到玩家身体，AI失败，玩家存活
                         killAISnake(ai, '你');
-                        playComboSound(2);
+                        killCount++;
+                        if (gameMode === 'chase') {
+                            document.getElementById('killCount').textContent = killCount;
+                        }
+                        showAIKillText(killCount);
+                        playComboSound(killCount >= 2 ? killCount : 2);
                         return;
                     }
                 }
@@ -1575,15 +1579,6 @@
                         changeDirTimer: 0
                     };
 
-                    // 显示重生提示
-                    scorePopups.push({
-                        x: x,
-                        y: y - 2,
-                        score: aiNames[i] + '重新入场!',
-                        life: 1.5,
-                        color: '#2ecc71',
-                        isKillText: true
-                    });
                     break;
                 }
             }
@@ -1624,15 +1619,17 @@
                 playKillSound();
             }
 
-            // 显示击杀提示
-            scorePopups.push({
-                x: deadAI.body[0].x,
-                y: deadAI.body[0].y - 2,
-                score: killerName + '击杀了' + deadAI.name + '!',
-                life: 2,
-                color: '#ff4757',
-                isKillText: true
-            });
+            // 仅在有明确击杀者时显示击杀提示（平局/同归于尽不显示）
+            if (killerName !== '平局') {
+                scorePopups.push({
+                    x: deadAI.body[0].x,
+                    y: deadAI.body[0].y - 2,
+                    score: killerName + '击杀了' + deadAI.name + '!',
+                    life: 2,
+                    color: '#ff4757',
+                    isKillText: true
+                });
+            }
         }
 
         // 击杀音效
@@ -1749,12 +1746,12 @@
                     }
                 });
 
-                // 显示AI名字和分数
+                // 显示AI名字和分数（与蛇身同色，更协调）
                 const headX = ai.body[0].x * GRID_SIZE - camera.x;
                 const headY = ai.body[0].y * GRID_SIZE - camera.y - 15;
                 if (headY > 0) {
                     ctx.font = 'bold 12px Arial';
-                    ctx.fillStyle = '#fff';
+                    ctx.fillStyle = ai.color;
                     ctx.textAlign = 'center';
                     ctx.fillText(ai.name + '(' + ai.score + ')', headX + GRID_SIZE/2, headY);
                 }
@@ -1854,75 +1851,38 @@
             } catch(e) {}
         }
 
-        // 连杀语音提示（使用 Web Speech API）
-        function playKillVoice(comboCount) {
-            try {
-                if (!('speechSynthesis' in window)) {
-                    console.log('Speech synthesis not supported');
-                    return;
-                }
-
-                // 停止之前的语音
-                window.speechSynthesis.cancel();
-
-                // 根据连击数选择语音
-                let text = '';
-                if (comboCount === 2) {
-                    text = 'Double Kill 双杀';
-                } else if (comboCount === 3) {
-                    text = 'Triple Kill 三杀';
-                } else if (comboCount === 4) {
-                    text = 'Quadra Kill 四杀';
-                } else if (comboCount === 5) {
-                    text = 'Penta Kill 五杀';
-                } else if (comboCount >= 6) {
-                    text = '超神';
-                }
-
-                if (text) {
-                    // 使用延迟确保语音能播放
-                    setTimeout(() => {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'zh-CN';
-                        utterance.rate = 1.0;
-                        utterance.pitch = 1.0;
-                        utterance.volume = 1.0;
-                        window.speechSynthesis.speak(utterance);
-                    }, 50);
-                }
-            } catch(e) {
-                console.log('语音播放失败:', e);
-            }
-        }
-
-        // 连杀文字显示
-        function showKillText(comboCount) {
+        // 击败 AI 时的连杀文字（一杀 First blood … 七杀及以上 Legendary），颜色逐级递进更清晰
+        function showAIKillText(killCount) {
             let text = '';
-            let color = '#ffa502';
-            if (comboCount === 2) {
-                text = 'Double Kill!';
-                color = '#ffa502';
-            } else if (comboCount === 3) {
-                text = 'Triple Kill!';
-                color = '#ff6348';
-            } else if (comboCount === 4) {
-                text = 'Quadra Kill!';
-                color = '#ff4757';
-            } else if (comboCount === 5) {
-                text = 'Penta Kill!';
-                color = '#ff6b81';
-            } else if (comboCount >= 6) {
-                text = '超神!!!';
-                color = '#ffd700';
+            let color = '#ff9800';
+            if (killCount === 1) {
+                text = 'First blood';
+                color = '#ff5252';   // 鲜红
+            } else if (killCount === 2) {
+                text = 'Double Kill';
+                color = '#ff9800';   // 橙色
+            } else if (killCount === 3) {
+                text = 'Triple Kill';
+                color = '#ffb74d';   // 亮橙
+            } else if (killCount === 4) {
+                text = 'Quadra Kill';
+                color = '#ffab91';   // 珊瑚
+            } else if (killCount === 5) {
+                text = 'Penta Kill';
+                color = '#ff8a80';   // 玫红
+            } else if (killCount === 6) {
+                text = 'Godlike';
+                color = '#ffd54f';   // 金色
+            } else if (killCount >= 7) {
+                text = 'Legendary';
+                color = '#fff176';   // 亮金/黄，最高档更醒目
             }
-
             if (text) {
-                // 创建连杀提示文字
                 scorePopups.push({
                     x: snake[0].x,
                     y: snake[0].y - 3,
                     score: text,
-                    life: 1.5,
+                    life: 4,  // 显示约 4 秒（大逃杀/大乱斗连杀文字保留更久）
                     color: color,
                     isKillText: true,
                     scale: 1.5
@@ -1930,34 +1890,27 @@
             }
         }
 
-        // 连击音效 - 游戏风格
+        // 吃食物连击音效，仅与吃食物连击有关
         function playComboSound(comboCount) {
-            showKillText(comboCount); // 显示连杀文字
-
             if (!audioCtx) return;
             lowerBgMusic();
 
             try {
-                // 创建多个振荡器叠加
                 const now = audioCtx.currentTime;
 
                 if (comboCount === 2) {
-                    // Double Kill - 双音上升
                     playTone(523, 0.1, now, 'square', 0.3);
                     playTone(659, 0.15, now + 0.1, 'square', 0.3);
                 } else if (comboCount === 3) {
-                    // Triple Kill - 三音上升
                     playTone(523, 0.1, now, 'square', 0.35);
                     playTone(659, 0.1, now + 0.1, 'square', 0.35);
                     playTone(784, 0.2, now + 0.2, 'square', 0.35);
                 } else if (comboCount === 4) {
-                    // Quadra Kill - 四音上升更强
                     playTone(523, 0.1, now, 'square', 0.4);
                     playTone(659, 0.1, now + 0.08, 'square', 0.4);
                     playTone(784, 0.1, now + 0.16, 'square', 0.4);
                     playTone(880, 0.25, now + 0.24, 'square', 0.4);
                 } else if (comboCount >= 5) {
-                    // Penta Kill / 超神 - 五音+震撼
                     playTone(523, 0.08, now, 'square', 0.45);
                     playTone(659, 0.08, now + 0.06, 'square', 0.45);
                     playTone(784, 0.08, now + 0.12, 'square', 0.45);
@@ -2153,9 +2106,9 @@
         function updateScorePopups() {
             for (let i = scorePopups.length - 1; i >= 0; i--) {
                 const p = scorePopups[i];
-                // 连杀文字移动更慢
+                // 连杀文字缓慢上浮
                 if (p.isKillText) {
-                    p.y -= 0.8;
+                    p.y -= 0.25;
                     p.life -= 0.015;
                 } else {
                     p.y -= 1.5;
@@ -2198,15 +2151,17 @@
                 ctx.globalAlpha = p.life;
 
                 if (p.isKillText) {
-                    // 连杀文字样式
+                    // 连杀文字样式：白描边 + 同色光晕，更清晰
                     ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
                     ctx.fillStyle = p.color;
                     ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.shadowColor = p.color;
-                    ctx.shadowBlur = 15;
-                    ctx.strokeText(p.score, p.x * GRID_SIZE + GRID_SIZE/2, p.y * GRID_SIZE + GRID_SIZE/2);
-                    ctx.fillText(p.score, p.x * GRID_SIZE + GRID_SIZE/2, p.y * GRID_SIZE + GRID_SIZE/2);
+                    ctx.shadowBlur = 18;
+                    const kx = p.x * GRID_SIZE + GRID_SIZE/2, ky = p.y * GRID_SIZE + GRID_SIZE/2;
+                    ctx.strokeText(p.score, kx, ky);
+                    ctx.fillText(p.score, kx, ky);
                 } else {
                     // 普通分数样式
                     ctx.font = 'bold 18px Arial';
@@ -2780,12 +2735,12 @@
                         if (dist < 1) {
                             // 玩家头部撞到AI身体，AI被击杀
                             killAISnake(ai, '你');
-                            killCount++; // 大追杀模式增加击杀数
-                            // 更新UI
+                            killCount++;
                             if (gameMode === 'chase') {
                                 document.getElementById('killCount').textContent = killCount;
                             }
-                            playComboSound(2);
+                            showAIKillText(killCount); // 击败 AI 时显示连杀文字
+                            playComboSound(killCount >= 2 ? killCount : 2); // 连杀音效
                             return;
                         }
                     }
