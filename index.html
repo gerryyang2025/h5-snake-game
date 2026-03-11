@@ -3046,6 +3046,13 @@
 
         // 大追杀模式结束
         function chaseModeGameOver() {
+            // 先设置结算项为「击杀AI数量」，避免面板显示时仍为默认「最高连击」
+            document.getElementById('finalComboLabel').textContent = '击杀AI数量';
+            document.getElementById('finalMaxCombo').textContent = killCount + '条';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLength').textContent = snake.length;
+            document.getElementById('comboDisplay').style.display = 'none';
+
             stopGameLoop();
             isRunning = false;
             stopBackgroundMusic();
@@ -3062,10 +3069,6 @@
                 maxKillCount = killCount;
             }
 
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalLength').textContent = snake.length;
-            document.getElementById('finalComboLabel').textContent = '击杀AI数量';
-            document.getElementById('finalMaxCombo').textContent = killCount + '条';
             document.getElementById('gameOver').classList.add('show');
 
             // 修改结束提示
@@ -3138,7 +3141,13 @@
 
             // 大追杀模式
             if (gameMode === 'chase') {
-                // 玩家死亡，提前结束
+                // 先设置结算项为「击杀AI数量」，避免面板显示时仍为默认「最高连击」
+                document.getElementById('finalComboLabel').textContent = '击杀AI数量';
+                document.getElementById('finalMaxCombo').textContent = killCount + '条';
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('finalLength').textContent = snake.length;
+                document.getElementById('comboDisplay').style.display = 'none';
+
                 stopBackgroundMusic();
                 isGameOver = true;
 
@@ -3150,10 +3159,6 @@
                     maxKillCount = killCount;
                 }
 
-                document.getElementById('finalScore').textContent = score;
-                document.getElementById('finalLength').textContent = snake.length;
-                document.getElementById('finalComboLabel').textContent = '击杀AI数量';
-                document.getElementById('finalMaxCombo').textContent = killCount + '条';
                 document.getElementById('gameOver').classList.add('show');
 
                 const gameOverTitle = document.querySelector('#gameOver h2');
