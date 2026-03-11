@@ -712,7 +712,7 @@
         <h2>哎呀~ 再接再厉! 💕</h2>
         <p class="score-summary">本次得分: <span id="finalScore">0</span></p>
         <p class="score-summary">蛇身长度: <span id="finalLength">0</span></p>
-        <p class="score-summary">最高连击: <span id="finalMaxCombo">0</span></p>
+        <p class="score-summary"><span id="finalComboLabel">最高连击</span>: <span id="finalMaxCombo">0</span></p>
         <button class="menu-btn" onclick="restart()">再来一局</button>
         <button class="menu-btn" onclick="backToMenu()" style="background: transparent; border: 2px solid #ff69b4; color: #ff69b4;">返回菜单</button>
     </div>
@@ -1681,6 +1681,7 @@
             // 显示失败原因
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
+            document.getElementById('finalComboLabel').textContent = '最高连击';
             document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
             document.getElementById('gameOver').classList.add('show');
 
@@ -3012,6 +3013,7 @@
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
+            document.getElementById('finalComboLabel').textContent = '最高连击';
             document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
             document.getElementById('gameOver').classList.add('show');
 
@@ -3031,6 +3033,7 @@
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
+            document.getElementById('finalComboLabel').textContent = '最高连击';
             document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
             document.getElementById('gameOver').classList.add('show');
 
@@ -3061,7 +3064,8 @@
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
-            document.getElementById('finalMaxCombo').textContent = '击杀: ' + killCount + '条';
+            document.getElementById('finalComboLabel').textContent = '击杀AI数量';
+            document.getElementById('finalMaxCombo').textContent = killCount + '条';
             document.getElementById('gameOver').classList.add('show');
 
             // 修改结束提示
@@ -3092,6 +3096,7 @@
                 isGameOver = true;
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalLength').textContent = snake.length;
+                document.getElementById('finalComboLabel').textContent = '最高连击';
                 document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
                 document.getElementById('gameOver').classList.add('show');
                 // 修改结束提示
@@ -3120,6 +3125,7 @@
 
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalLength').textContent = snake.length;
+                document.getElementById('finalComboLabel').textContent = '最高连击';
                 document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
                 document.getElementById('gameOver').classList.add('show');
 
@@ -3146,7 +3152,8 @@
 
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalLength').textContent = snake.length;
-                document.getElementById('finalMaxCombo').textContent = '击杀: ' + killCount + '条';
+                document.getElementById('finalComboLabel').textContent = '击杀AI数量';
+                document.getElementById('finalMaxCombo').textContent = killCount + '条';
                 document.getElementById('gameOver').classList.add('show');
 
                 const gameOverTitle = document.querySelector('#gameOver h2');
@@ -3170,6 +3177,7 @@
                 isGameOver = true;
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalLength').textContent = snake.length;
+                document.getElementById('finalComboLabel').textContent = '最高连击';
                 document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
                 document.getElementById('gameOver').classList.add('show');
             }
