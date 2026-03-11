@@ -1658,9 +1658,20 @@
             stopBackgroundMusic();
             isGameOver = true;
 
-            // 大乱斗模式：隐藏实时排名
+            // 大乱斗模式：隐藏实时排名，结算时再显示排名信息
             if (gameMode === 'battle') {
                 document.getElementById('rankingDisplay').style.display = 'none';
+                document.getElementById('finalComboLabel').textContent = '最高连击';
+                document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
+            }
+
+            // 大逃杀模式：隐藏连击浮层，结算用击杀AI数量
+            if (gameMode === 'chase') {
+                document.getElementById('comboDisplay').style.display = 'none';
+                document.getElementById('rankingDisplay').style.display = 'none';
+                if (killCount > maxKillCount) maxKillCount = killCount;
+                document.getElementById('finalComboLabel').textContent = '击杀AI数量';
+                document.getElementById('finalMaxCombo').textContent = killCount + '条';
             }
 
             // 玩家也转换为食物
@@ -1678,16 +1689,32 @@
                 });
             }
 
-            // 显示失败原因
+            // 显示失败原因（大逃杀已在上面设置击杀AI数量）
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
-            document.getElementById('finalComboLabel').textContent = '最高连击';
-            document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
+            if (gameMode !== 'chase') {
+                document.getElementById('finalComboLabel').textContent = '最高连击';
+                document.getElementById('finalMaxCombo').textContent = maxCombo + '连击';
+            }
             document.getElementById('gameOver').classList.add('show');
 
             const gameOverTitle = document.querySelector('#gameOver h2');
             if (gameOverTitle) {
-                gameOverTitle.textContent = '游戏结束! ' + reason;
+                if (gameMode === 'chase') {
+                    const aliveCount = aiSnakes.filter(ai => ai.alive).length;
+                    gameOverTitle.innerHTML = '游戏结束!<br><span style="font-size:16px">击杀: ' + killCount + '条 | 存活: ' + aliveCount + '条</span><br><span style="font-size:12px; color:#ffb6c1;">最高纪录: ' + maxKillCount + '条</span>';
+                } else if (gameMode === 'battle') {
+                    battleRanking = [
+                        { name: '你', score: score, length: snake.length, isPlayer: true },
+                        ...aiSnakes.filter(ai => ai.alive).map(ai => ({ name: ai.name, score: ai.score, length: ai.body.length, isPlayer: false }))
+                    ];
+                    battleRanking.sort((a, b) => b.score - a.score);
+                    const playerRank = battleRanking.findIndex(r => r.isPlayer) + 1;
+                    const rankingText = battleRanking.map((r, i) => (i + 1) + '. ' + r.name + ': ' + r.score + '分').join('<br>');
+                    gameOverTitle.innerHTML = '你被淘汰了!<br><span style="font-size:16px">排名: 第' + playerRank + '名</span><br><span style="font-size:12px">' + rankingText + '</span>';
+                } else {
+                    gameOverTitle.textContent = '游戏结束! ' + reason;
+                }
             }
         }
 
