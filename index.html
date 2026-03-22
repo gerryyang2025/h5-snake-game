@@ -2020,7 +2020,7 @@
             } catch(e) {}
         }
 
-        // 食物类型（emoji + 颜色）
+        // 食物类型 - emoji 样式更有趣味性
         const FOOD_COLORS = [
             // 普通食物（1分）
             { emoji: '🍎', color: '#ff4757', glow: '#ff6b81', value: 1 },
@@ -2051,6 +2051,25 @@
         const MAGNET_DURATION = 15;    // 磁铁持续时间（秒）
         const MAGNET_BASE_RANGE = 3.5; // 基础磁吸范围
         const MAGNET_BOOST_RANGE = 5;  // 磁铁激活后磁吸范围
+
+        // 辅助函数：调整颜色亮度
+        function adjustColor(color, amount) {
+            // 处理 HEX 颜色
+            if (color.startsWith('#')) {
+                let hex = color.slice(1);
+                if (hex.length === 3) {
+                    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+                }
+                let r = parseInt(hex.slice(0, 2), 16);
+                let g = parseInt(hex.slice(2, 4), 16);
+                let b = parseInt(hex.slice(4, 6), 16);
+                r = Math.max(0, Math.min(255, r + amount));
+                g = Math.max(0, Math.min(255, g + amount));
+                b = Math.max(0, Math.min(255, b + amount));
+                return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+            }
+            return color;
+        }
 
         function spawnFood(count = 1) {
             for (let i = 0; i < count; i++) {
@@ -2480,9 +2499,9 @@
                     ctx.textBaseline = 'middle';
                     const magnetSize = GRID_SIZE * 1.5;
                     ctx.font = `${magnetSize}px Arial`;
-                    ctx.fillText(food.emoji, cx, cy);
+                    ctx.fillText('🧲', cx, cy);
                 } else {
-                    // 普通食物
+                    // 普通食物 - emoji
                     ctx.shadowColor = food.glow;
                     ctx.shadowBlur = 10;
                     ctx.textAlign = 'center';
@@ -2492,34 +2511,6 @@
                 }
                 ctx.restore();
             });
-
-            // 加速特效（画在蛇后面，在蛇身下层）
-            if (isBoosting) {
-                ctx.save();
-                const tail = snake[snake.length - 1];
-                const tailX = tail.x * GRID_SIZE + GRID_SIZE/2;
-                const tailY = tail.y * GRID_SIZE + GRID_SIZE/2;
-
-                // 多层火焰拖尾（缩短版 - 减少层数和长度）
-                const colors = ['#ffff00', '#ffaa00', '#ff6600', '#ff3300', '#ff0000'];
-                for (let i = 1; i <= 5; i++) {  // 从8层减少到5层
-                    const alpha = 0.8 - i * 0.12;
-                    const width = 10 - i;  // 宽度也稍微减小
-                    const color = colors[Math.min(i - 1, colors.length - 1)];
-                    ctx.strokeStyle = color;
-                    ctx.globalAlpha = alpha;
-                    ctx.lineWidth = width;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(tailX, tailY);
-                    ctx.lineTo(
-                        tailX - Math.cos(direction) * i * 10,  // 长度从15减少到10
-                        tailY - Math.sin(direction) * i * 10
-                    );
-                    ctx.stroke();
-                }
-                ctx.restore();
-            }
 
             // 磁铁激活时显示范围指示器
             if (magnetActive && snake.length > 0) {
@@ -2558,81 +2549,127 @@
                 const lightness = 60 - ratio * 15;
 
                 const padding = 1;
-                const radius = 4;
-                const x = segment.x * GRID_SIZE + padding;
-                const y = segment.y * GRID_SIZE + padding;
-                const w = GRID_SIZE - padding * 2;
-                const h = GRID_SIZE - padding * 2;
+                const radius = GRID_SIZE / 2 - padding; // 圆形
+                const cx = segment.x * GRID_SIZE + GRID_SIZE / 2;
+                const cy = segment.y * GRID_SIZE + GRID_SIZE / 2;
 
-                // 蛇身
-                const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
-                gradient.addColorStop(0, `hsl(${hue}, 100%, ${lightness + 15}%)`);
-                gradient.addColorStop(1, `hsl(${hue}, 100%, ${lightness - 5}%)`);
+                // 蛇身 - Slither.io 风格：圆球 + 光泽渐变
+                const bodyGradient = ctx.createRadialGradient(
+                    cx - radius * 0.3, cy - radius * 0.3, 0, // 高光位置
+                    cx, cy, radius
+                );
+                bodyGradient.addColorStop(0, `hsl(${hue}, 100%, ${lightness + 25}%)`); // 高光
+                bodyGradient.addColorStop(0.5, `hsl(${hue}, 100%, ${lightness}%)`); // 主色
+                bodyGradient.addColorStop(1, `hsl(${hue}, 100%, ${lightness - 15}%)`); // 阴影
 
-                ctx.fillStyle = gradient;
+                ctx.fillStyle = bodyGradient;
                 ctx.beginPath();
-                ctx.roundRect(x, y, w, h, radius);
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
                 ctx.fill();
+
+                // 蛇身外发光
+                ctx.save();
+                ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = 'transparent';
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
 
                 // 蛇头
                 if (i === 0) {
-                    // 加速时头部特效（超大光晕：橙→黄→白）
+
+                    // 蛇头 - 更大的圆球
+                    const headRadius = radius * 1.1;
+                    const headGradient = ctx.createRadialGradient(
+                        cx - headRadius * 0.3, cy - headRadius * 0.3, 0,
+                        cx, cy, headRadius
+                    );
+                    headGradient.addColorStop(0, `hsl(${hue}, 100%, ${lightness + 30}%)`);
+                    headGradient.addColorStop(0.5, `hsl(${hue}, 100%, ${lightness + 10}%)`);
+                    headGradient.addColorStop(1, `hsl(${hue}, 100%, ${lightness - 10}%)`);
+
+                    // 蛇头发光
+                    ctx.save();
+                    ctx.shadowColor = '#ff69b4';
+                    ctx.shadowBlur = 25;
+                    ctx.fillStyle = headGradient;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // 加速时头部特效（更明显的橙色光晕）
                     if (isBoosting) {
                         ctx.save();
-                        const headCenterX = x + w/2;
-                        const headCenterY = y + h/2;
-
-                        // 多层光晕效果
-                        const glowLayers = [
-                            { radius: 35, color: 'rgba(255, 255, 255, 0.9)' },   // 最外层白
-                            { radius: 28, color: 'rgba(255, 255, 0, 0.7)' },      // 黄色
-                            { radius: 22, color: 'rgba(255, 170, 0, 0.6)' },      // 橙色
-                            { radius: 16, color: 'rgba(255, 100, 0, 0.5)' },       // 深橙色
-                        ];
-
-                        glowLayers.forEach(layer => {
-                            ctx.fillStyle = layer.color;
-                            ctx.beginPath();
-                            ctx.arc(headCenterX, headCenterY, layer.radius, 0, Math.PI * 2);
-                            ctx.fill();
-                        });
-
-                        // 脉冲发光
-                        const pulse = Math.sin(time * 10) * 0.3 + 0.7;
-                        ctx.globalAlpha = pulse;
-                        ctx.shadowColor = '#ffffff';
-                        ctx.shadowBlur = 25;
-                        ctx.fillStyle = '#ffffff';
+                        
+                        // 1. 外层大光晕 - 金色到透明
+                        const outerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, headRadius * 3);
+                        outerGlow.addColorStop(0, 'rgba(255, 215, 0, 0.5)');
+                        outerGlow.addColorStop(0.4, 'rgba(255, 140, 0, 0.3)');
+                        outerGlow.addColorStop(0.7, 'rgba(255, 69, 0, 0.15)');
+                        outerGlow.addColorStop(1, 'rgba(255, 69, 0, 0)');
+                        ctx.fillStyle = outerGlow;
                         ctx.beginPath();
-                        ctx.arc(headCenterX, headCenterY, 8, 0, Math.PI * 2);
+                        ctx.arc(cx, cy, headRadius * 3, 0, Math.PI * 2);
                         ctx.fill();
-
+                        
+                        // 2. 中层脉冲光晕
+                        const pulse = Math.sin(Date.now() / 50) * 0.3 + 0.7;
+                        const midGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, headRadius * 2);
+                        midGlow.addColorStop(0, `rgba(255, 200, 50, ${0.6 * pulse})`);
+                        midGlow.addColorStop(0.5, `rgba(255, 120, 0, ${0.4 * pulse})`);
+                        midGlow.addColorStop(1, 'rgba(255, 80, 0, 0)');
+                        ctx.fillStyle = midGlow;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, headRadius * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 3. 内层高光
+                        ctx.fillStyle = `rgba(255, 255, 200, ${0.5 * pulse})`;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, headRadius * 0.8, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 4. 外发光线
+                        ctx.strokeStyle = `rgba(255, 150, 0, ${0.3 * pulse})`;
+                        ctx.lineWidth = 2;
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (i / 8) * Math.PI * 2;
+                            ctx.beginPath();
+                            ctx.moveTo(cx + Math.cos(angle) * headRadius * 1.5, cy + Math.sin(angle) * headRadius * 1.5);
+                            ctx.lineTo(cx + Math.cos(angle) * headRadius * 2.5, cy + Math.sin(angle) * headRadius * 2.5);
+                            ctx.stroke();
+                        }
+                        
                         ctx.restore();
                     }
 
-                    ctx.shadowColor = '#ff69b4';
-                    ctx.shadowBlur = 20;
-                    ctx.fillStyle = '#ff69b4';
-                    ctx.beginPath();
-                    ctx.roundRect(x, y, w, h, radius);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-
-                    // 眼睛 - 根据方向旋转
+                    // 眼睛 - Slither.io 风格可爱眼睛
                     ctx.save();
-                    ctx.translate(x + w/2, y + h/2);
+                    ctx.translate(cx, cy);
                     ctx.rotate(direction);
 
-                    ctx.fillStyle = '#111';
-                    ctx.beginPath();
-                    ctx.arc(4, -4, 3, 0, Math.PI * 2);
-                    ctx.arc(4, 4, 3, 0, Math.PI * 2);
-                    ctx.fill();
-
+                    // 眼白
                     ctx.fillStyle = '#fff';
                     ctx.beginPath();
-                    ctx.arc(5, -3, 1.5, 0, Math.PI * 2);
-                    ctx.arc(5, 3, 1.5, 0, Math.PI * 2);
+                    ctx.arc(5, -4, 4, 0, Math.PI * 2);
+                    ctx.arc(5, 4, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 瞳孔
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath();
+                    ctx.arc(6, -4, 2.5, 0, Math.PI * 2);
+                    ctx.arc(6, 4, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 眼神光 - 让眼睛更有神
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(7, -5, 1.2, 0, Math.PI * 2);
+                    ctx.arc(7, 3, 1.2, 0, Math.PI * 2);
                     ctx.fill();
 
                     ctx.restore();
