@@ -840,6 +840,23 @@
         const AI_SNAKE_COUNT = 8; // AI蛇数量
         const AI_SNAKE_SEGMENT_SPACING = 0.5; // AI蛇初始/重生时节间距，与移动步长一致避免截断
 
+        // 玩家蛇皮肤系统 - 多种颜色方案
+        const PLAYER_SKINS = [
+            { name: '樱花粉', hue: 330, glow: '#ff69b4' },      // 粉色
+            { name: '海洋蓝', hue: 200, glow: '#3498db' },       // 蓝色
+            { name: '森林绿', hue: 120, glow: '#2ecc71' },      // 绿色
+            { name: '夕阳橙', hue: 30, glow: '#e67e22' },        // 橙色
+            { name: '薰衣草', hue: 270, glow: '#9b59b6' },       // 紫色
+            { name: '珊瑚红', hue: 0, glow: '#e74c3c' },         // 红色
+            { name: '柠檬黄', hue: 50, glow: '#f1c40f' },        // 黄色
+            { name: '薄荷青', hue: 160, glow: '#1abc9c' },       // 青色
+            { name: '巧克力', hue: 25, glow: '#8B4513' },        // 棕色
+            { name: '冰川蓝', hue: 190, glow: '#74b9ff' },       // 浅蓝
+            { name: '玫瑰红', hue: 350, glow: '#fd79a8' },       // 玫红
+            { name: '翡翠绿', hue: 145, glow: '#00b894' },       // 深绿
+        ];
+        let playerSkin = PLAYER_SKINS[0]; // 当前使用的皮肤
+
         // 无限画布 - 相机系统
         let camera = { x: 0, y: 0 };
         const WORLD_SIZE = 60; // 虚拟世界大小
@@ -2602,7 +2619,7 @@
             // 蛇
             snake.forEach((segment, i) => {
                 const ratio = i / Math.max(snake.length - 1, 1);
-                const hue = 330 - ratio * 20; // 粉色系
+                const hue = playerSkin.hue - ratio * 20; // 使用玩家皮肤的主色调
                 const lightness = 60 - ratio * 15;
 
                 const padding = 1;
@@ -2649,7 +2666,7 @@
 
                     // 蛇头发光
                     ctx.save();
-                    ctx.shadowColor = '#ff69b4';
+                    ctx.shadowColor = playerSkin.glow;
                     ctx.shadowBlur = 25;
                     ctx.fillStyle = headGradient;
                     ctx.beginPath();
@@ -2829,7 +2846,7 @@
             const rankingList = document.getElementById('rankingList');
             if (rankingList) {
                 rankingList.innerHTML = ranking.map((r, i) => {
-                    const color = r.isPlayer ? '#2ecc71' : '#fff';
+                    const color = r.isPlayer ? playerSkin.glow : '#fff';
                     const star = r.isPlayer ? ' ⭐' : '';
                     return `<div style="color:${color}">${i + 1}. ${r.name}: ${r.score}${star}</div>`;
                 }).join('');
@@ -3147,6 +3164,11 @@
 
         function startGame() {
             frameCount = 0;
+            
+            // 随机选择玩家蛇的皮肤
+            playerSkin = PLAYER_SKINS[Math.floor(Math.random() * PLAYER_SKINS.length)];
+            console.log('🎨 玩家皮肤:', playerSkin.name, 'Hue:', playerSkin.hue);
+            
             updateGridCount();
 
             // 激活游戏画布和游戏元素
