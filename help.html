@@ -12,10 +12,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #4a4a5e 0%, #3d3d4f 50%, #2d2d3d 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Arial, sans-serif;
+            background: #0d1117;
             min-height: 100vh;
-            color: #fff;
+            color: #c9d1d9;
             padding: 20px;
         }
 
@@ -33,34 +33,41 @@
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            box-shadow: 0 0 25px rgba(255,105,180,0.5);
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
             margin-bottom: 10px;
         }
 
         .header h1 {
             font-size: 28px;
-            color: #fff;
+            color: #58a6ff;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .back-btn {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff69b4, #ff1493);
-            color: #fff;
-            padding: 10px 30px;
-            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f6f8fa;
+            color: #24292f;
+            padding: 10px 24px;
+            border-radius: 6px;
             text-decoration: none;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 600;
             margin-bottom: 20px;
             cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 15px rgba(255,105,180,0.4);
+            border: 1px solid rgba(27, 31, 35, 0.15);
+            box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04), inset 0 1px 0 rgba(208, 215, 222, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: #f3f4f6;
         }
 
         /* 作者信息 */
         .author-info {
-            color: rgba(255,255,255,0.6);
+            color: #8b949e;
             font-size: 12px;
             text-align: center;
             margin-top: 20px;
@@ -68,36 +75,36 @@
         }
 
         .author-info span {
-            color: #ff69b4;
-            font-weight: bold;
+            color: #58a6ff;
+            font-weight: 600;
         }
 
         .section {
-            background: rgba(60, 60, 80, 0.6);
-            border-radius: 15px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
             padding: 20px;
             margin-bottom: 20px;
-            backdrop-filter: blur(10px);
         }
 
         .section h2 {
             font-size: 18px;
-            color: #fff;
+            color: #58a6ff;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid #30363d;
         }
 
         .section h3 {
             font-size: 15px;
-            color: #fff;
+            color: #7ee787;
             margin: 15px 0 10px;
         }
 
         .section p, .section li {
             font-size: 14px;
             line-height: 1.8;
-            color: #fff;
+            color: #c9d1d9;
         }
 
         .section ul {
@@ -109,21 +116,27 @@
         }
 
         .highlight {
-            color: #ff1493;
-            font-weight: bold;
+            color: #7ee787;
+            font-weight: 600;
         }
 
         .mode-card {
-            background: rgba(255,105,180,0.2);
-            border-radius: 10px;
+            background: rgba(31, 111, 235, 0.1);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            border-radius: 6px;
             padding: 15px;
             margin-bottom: 15px;
-            border-left: 4px solid #ff69b4;
+            border-left: 4px solid #1f6feb;
         }
 
         .mode-card h3 {
-            color: #fff;
+            color: #c9d1d9;
             margin-top: 0;
+        }
+
+        .mode-card p {
+            color: #8b949e;
+            font-size: 13px;
         }
 
         .food-table {
@@ -133,14 +146,18 @@
         }
 
         .food-table th, .food-table td {
-            padding: 8px;
+            padding: 10px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            font-size: 14px;
+            border-bottom: 1px solid #30363d;
+            font-size: 13px;
         }
 
         .food-table th {
-            color: #ff69b4;
+            color: #58a6ff;
+        }
+
+        .food-table td {
+            color: #c9d1d9;
         }
 
         .food-table .emoji {
@@ -149,11 +166,14 @@
 
         .key {
             display: inline-block;
-            background: rgba(255,105,180,0.3);
+            background: #21262d;
+            border: 1px solid #30363d;
             padding: 3px 10px;
-            border-radius: 5px;
+            border-radius: 6px;
             margin: 2px;
             font-size: 12px;
+            color: #c9d1d9;
+            font-family: inherit;
         }
     </style>
 </head>
@@ -172,31 +192,31 @@
 
             <div class="mode-card">
                 <h3>🎮 经典模式</h3>
-                <p style="color:#fff;">无限时间，尽可能吃掉更多食物变得更长。支持生命系统，失败后可复活。</p>
-                <p style="margin-top:10px; color:#ffb6c1;">特色：<span style="color:#00d2ff;">传送门</span> - 穿过可快速穿梭地图</p>
+                <p style="color:#c9d1d9;">无限时间，尽可能吃掉更多食物变得更长。支持生命系统，失败后可复活。</p>
+                <p style="margin-top:10px; color:#8b949e;">特色：<span style="color:#00d2ff;">传送门</span> - 穿过可快速穿梭地图</p>
             </div>
 
             <div class="mode-card">
                 <h3>⏱️ 限时挑战</h3>
-                <p style="color:#fff;">90秒倒计时，在限定时间内尽可能拿高分。按得分和长度排名结算。</p>
-                <p style="margin-top:10px; color:#ffb6c1;">特色：<span style="color:#ffa502;">连击系统</span> - 连续吃食物获得加分加成</p>
+                <p style="color:#c9d1d9;">90秒倒计时，在限定时间内尽可能拿高分。按得分和长度排名结算。</p>
+                <p style="margin-top:10px; color:#8b949e;">特色：<span style="color:#ffa502;">连击系统</span> - 连续吃食物获得加分加成</p>
             </div>
 
             <div class="mode-card">
                 <h3>⚔️ 大乱斗</h3>
-                <p style="color:#fff;">3分钟多人混战！与8名AI对手同场竞技，吃掉他们的蛇身让自己更强壮，率先达成目标或存活到最后即为胜利！</p>
-                <p style="margin-top:10px; color:#ffb6c1;"><span style="color:#9b59b6;">⏱️ 倒计时</span> - 3分钟倒计时，最后10秒红色闪烁警告</p>
-                <p style="margin-top:5px; color:#ffb6c1;">特色：<span style="color:#e74c3c;">AI对手</span> - 与8条AI蛇对战</p>
-                <p style="margin-top:5px; color:#ffb6c1;"><span style="color:#2ecc71;">击杀规则</span> - 主动撞击对方蛇身为击杀，被撞者化为食物</p>
-                <p style="margin-top:5px; color:#ffb6c1;"><span style="color:#f1c40f;">实时排名</span> - 随时查看当前排名</p>
+                <p style="color:#c9d1d9;">3分钟多人混战！与8名AI对手同场竞技，吃掉他们的蛇身让自己更强壮，率先达成目标或存活到最后即为胜利！</p>
+                <p style="margin-top:10px; color:#8b949e;"><span style="color:#9b59b6;">⏱️ 倒计时</span> - 3分钟倒计时，最后10秒红色闪烁警告</p>
+                <p style="margin-top:5px; color:#8b949e;">特色：<span style="color:#e74c3c;">AI对手</span> - 与8条AI蛇对战</p>
+                <p style="margin-top:5px; color:#8b949e;"><span style="color:#2ecc71;">击杀规则</span> - 主动撞击对方蛇身为击杀，被撞者化为食物</p>
+                <p style="margin-top:5px; color:#8b949e;"><span style="color:#f1c40f;">实时排名</span> - 随时查看当前排名</p>
             </div>
 
             <div class="mode-card" style="background: rgba(255,71,87,0.25); border-left-color: #ff4757;">
                 <h3>🔪 大逃杀·猎手</h3>
-                <p style="color:#fff;">1分钟限时猎杀！玩家扮演"猎手"角色，追杀16条逃跑的AI蛇。AI会尽全力躲避玩家，你需要在一分钟内尽可能多地击杀AI！</p>
-                <p style="margin-top:10px; color:#ffb6c1;">特色：<span style="color:#ff4757;">猎杀AI</span> - 击杀AI后身体化为食物</p>
-                <p style="margin-top:5px; color:#ffb6c1;"><span style="color:#ffa502;">三种难度</span> - 简单/普通/困难AI智商可选</p>
-                <p style="margin-top:5px; color:#ffb6c1;"><span style="color:#2ecc71;">击杀成绩</span> - 根据击杀数评定表现</p>
+                <p style="color:#c9d1d9;">1分钟限时猎杀！玩家扮演"猎手"角色，追杀16条逃跑的AI蛇。AI会尽全力躲避玩家，你需要在一分钟内尽可能多地击杀AI！</p>
+                <p style="margin-top:10px; color:#8b949e;">特色：<span style="color:#ff4757;">猎杀AI</span> - 击杀AI后身体化为食物</p>
+                <p style="margin-top:5px; color:#8b949e;"><span style="color:#ffa502;">三种难度</span> - 简单/普通/困难AI智商可选</p>
+                <p style="margin-top:5px; color:#8b949e;"><span style="color:#2ecc71;">击杀成绩</span> - 根据击杀数评定表现</p>
             </div>
         </div>
 
@@ -279,25 +299,25 @@
                 <li>撞到自己的蛇身 - 游戏结束（长度>8节时）</li>
                 <li>限时挑战：时间归零</li>
             </ul>
-            <p style="margin-top:10px; color:#ffb6c1;">注：经典模式有无敌时间，失败后可在一定次数内复活</p>
+            <p style="margin-top:10px; color:#8b949e;">注：经典模式有无敌时间，失败后可在一定次数内复活</p>
         </div>
 
         <div class="section">
             <h2>⚔️ 大乱斗规则</h2>
             <div class="mode-card">
                 <h3>🎮 模式介绍</h3>
-                <p style="color:#fff;">3分钟限时多人混战！与8名AI对手（小青、小红、小白、小黄、小紫、小橙、小粉、小灰）同场竞技。</p>
-                <p style="margin-top:10px; color:#ffb6c1;">目标：在3分钟内获得最高分，或存活到最后！</p>
+                <p style="color:#c9d1d9;">3分钟限时多人混战！与8名AI对手（小青、小红、小白、小黄、小紫、小橙、小粉、小灰）同场竞技。</p>
+                <p style="margin-top:10px; color:#8b949e;">目标：在3分钟内获得最高分，或存活到最后！</p>
             </div>
 
             <div class="mode-card">
                 <h3>⚔️ 击杀规则</h3>
-                <p style="color:#fff;"><strong>大乱斗碰撞判定规则：</strong></p>
+                <p style="color:#c9d1d9;"><strong>大乱斗碰撞判定规则：</strong></p>
                 <ul style="margin-top:10px;">
                     <li style="margin-bottom:10px;">🔴 <strong>头对头碰撞</strong>：如果两条蛇的头部相撞，判定双方同时失败（平局）</li>
                     <li style="margin-bottom:10px;">🟢 <strong>头对身体碰撞</strong>：如果一条蛇的头部撞到另一条蛇的身体，则头部撞到身体的蛇失败，另一条蛇存活</li>
                 </ul>
-                <p style="margin-top:15px; color:#fff;"><strong>具体判定：</strong></p>
+                <p style="margin-top:15px; color:#c9d1d9;"><strong>具体判定：</strong></p>
                 <ul style="margin-top:5px;">
                     <li>你撞到AI蛇头部 → <span style="color:#ff4757;">平局，双方同时失败</span></li>
                     <li>你撞到AI蛇身体 → <span style="color:#ff4757;">你失败，AI存活</span></li>
@@ -311,19 +331,19 @@
 
             <div class="mode-card">
                 <h3>🏆 排名系统</h3>
-                <p style="color:#fff;">游戏界面右上角实时显示当前排名</p>
-                <p style="margin-top:10px; color:#ffb6c1;">游戏结束后显示最终排名，统计所有玩家的得分和长度</p>
+                <p style="color:#c9d1d9;">游戏界面右上角实时显示当前排名</p>
+                <p style="margin-top:10px; color:#8b949e;">游戏结束后显示最终排名，统计所有玩家的得分和长度</p>
             </div>
 
             <div class="mode-card">
                 <h3>⏱️ 时间规则</h3>
-                <p style="color:#fff;">倒计时3分钟（180秒）</p>
-                <p style="margin-top:10px; color:#ffb6c1;">最后10秒：倒计时红色闪烁警告</p>
+                <p style="color:#c9d1d9;">倒计时3分钟（180秒）</p>
+                <p style="margin-top:10px; color:#8b949e;">最后10秒：倒计时红色闪烁警告</p>
             </div>
 
             <div class="mode-card">
                 <h3>💀 死亡条件</h3>
-                <p style="color:#fff;">大乱斗中以下情况会导致失败：</p>
+                <p style="color:#c9d1d9;">大乱斗中以下情况会导致失败：</p>
                 <ul style="margin-top:10px;">
                     <li>撞到地图边界 - 立即死亡</li>
                     <li>头对头碰撞 - <span style="color:#ff4757;">双方同时死亡（平局）</span></li>
@@ -338,13 +358,13 @@
             <h2>🔪 大逃杀·猎手模式</h2>
             <div class="mode-card">
                 <h3>🎮 模式介绍</h3>
-                <p style="color:#fff;">1分钟限时猎杀！玩家扮演"猎手"角色，追杀16条逃跑的AI蛇。AI会尽全力躲避玩家，你需要在一分钟内尽可能多地击杀AI！</p>
-                <p style="margin-top:10px; color:#ffb6c1;">目标：在1分钟内击杀尽可能多的AI蛇！</p>
+                <p style="color:#c9d1d9;">1分钟限时猎杀！玩家扮演"猎手"角色，追杀16条逃跑的AI蛇。AI会尽全力躲避玩家，你需要在一分钟内尽可能多地击杀AI！</p>
+                <p style="margin-top:10px; color:#8b949e;">目标：在1分钟内击杀尽可能多的AI蛇！</p>
             </div>
 
             <div class="mode-card">
                 <h3>⚔️ 击杀规则</h3>
-                <p style="color:#fff;"><strong>大逃杀猎手碰撞判定规则：</strong></p>
+                <p style="color:#c9d1d9;"><strong>大逃杀猎手碰撞判定规则：</strong></p>
                 <ul style="margin-top:10px;">
                     <li style="margin-bottom:10px;">🗡️ <strong>头部判定</strong>：玩家头部撞击AI蛇的任何部位 → <span style="color:#2ecc71;">AI被击杀，AI身体转化为食物</span></li>
                     <li style="margin-bottom:10px;">💀 <strong>身体判定</strong>：AI蛇头部撞击玩家身体 → <span style="color:#ff4757;">玩家失败，游戏立即结束</span></li>
@@ -355,7 +375,7 @@
 
             <div class="mode-card">
                 <h3>🍎 食物与成长机制</h3>
-                <p style="color:#fff;"><strong>重要：</strong>大逃杀猎手模式初始没有随机食物！</p>
+                <p style="color:#c9d1d9;"><strong>重要：</strong>大逃杀猎手模式初始没有随机食物！</p>
                 <ul style="margin-top:10px;">
                     <li>击杀AI后，AI的身体会散落成若干食物点（每节身体变成一个食物）</li>
                     <li>玩家吃到食物会增长身体长度</li>
@@ -370,19 +390,19 @@
                     <li>玩家中途死亡（撞墙、撞自身或被AI头部撞到）→ 游戏提前结束</li>
                     <li>时间耗尽 → 根据击杀数显示成绩</li>
                 </ul>
-                <p style="margin-top:10px; color:#ffb6c1;">游戏结束后会记录最高击杀纪录！</p>
+                <p style="margin-top:10px; color:#8b949e;">游戏结束后会记录最高击杀纪录！</p>
             </div>
 
             <div class="mode-card">
                 <h3>🧠 AI行为设计</h3>
-                <p style="color:#fff;"><strong>逃跑优先：</strong></p>
+                <p style="color:#c9d1d9;"><strong>逃跑优先：</strong></p>
                 <ul style="margin-top:5px;">
                     <li>AI会感知玩家头部方向，向远离玩家的方向移动</li>
                     <li>AI会避免撞墙和互相碰撞</li>
                     <li>使用简单的寻路算法预测玩家路径，提前转向</li>
                     <li>加入随机扰动，避免AI行为过于机械</li>
                 </ul>
-                <p style="margin-top:10px; color:#fff;"><strong>AI交互规则：</strong></p>
+                <p style="margin-top:10px; color:#c9d1d9;"><strong>AI交互规则：</strong></p>
                 <ul style="margin-top:5px;">
                     <li>AI之间不会互相攻击，但会互相躲避</li>
                     <li>AI头部碰到玩家身体时，玩家失败（AI的"意外反杀"）</li>
